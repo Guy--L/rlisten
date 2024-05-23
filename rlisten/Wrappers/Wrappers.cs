@@ -52,3 +52,45 @@ public class AuthTokenRetrieverWrapper : IAuthTokenRetriever
     public string BrowserPath => _browserPath;
     public string AuthURL => _authTokenRetriever.AuthURL();
 }
+
+
+public interface IPost
+{
+    string Id { get; }
+    string Title { get; }
+    string Author { get; }
+    DateTime Created { get; }
+    int UpVotes { get; }
+    int DownVotes { get; }
+    string Permalink { get; }
+    string Subreddit { get; }
+
+    void Upvote();
+    void Downvote();
+    void Hide();
+}
+
+public interface IRedditClient
+{
+    ISubreddit Subreddit(string name);
+    Task InitializeClientAsync(string accessToken);
+    Task InitializeClientWithRefreshTokenAsync(string refreshToken);
+}
+
+public interface ISubreddit
+{
+    ISubredditPosts Posts { get; }
+    string Name { get; }
+}
+
+public interface ISubredditPosts
+{
+    event EventHandler<PostsUpdateEventArgs> NewUpdated;
+
+    IEnumerable<IPost> GetTop(string t, int limit);
+    IEnumerable<IPost> GetNew(int limit);
+    IEnumerable<IPost> GetHot();
+
+    bool MonitorNew();
+    bool NewPostsIsMonitored();
+}
