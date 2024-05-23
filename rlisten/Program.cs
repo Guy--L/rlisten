@@ -6,6 +6,8 @@ using rlisten.Services;
 using static System.Runtime.InteropServices.RuntimeInformation;
 using static System.Runtime.InteropServices.OSPlatform;
 using Reddit.AuthTokenRetriever;
+using rlisten.Models;
+using rlisten.Wrappers;
 
 namespace rlisten;
 
@@ -54,9 +56,28 @@ class Program
                 services.AddSingleton<IFileProvider, PhysicalFileProvider>();
                 services.AddSingleton<ISettingsManager, SettingsManager>();
                 services.AddSingleton(provider => context.Configuration);
+                services.AddSingleton<IRedditClient, RedditClientWrapper>();
                 services.AddSingleton(provider => new AuthTokenRetrieverLib(rApiID, rApiSecret, 8080));
+                services.AddSingleton<IProcessWrapper, ProcessWrapper>();
+                services.AddSingleton<IAuthTokenRetriever, AuthTokenRetrieverWrapper>(provider =>
+                    new AuthTokenRetrieverWrapper(provider.GetRequiredService<AuthTokenRetrieverLib>(), browserPath)
+                );
+                services.AddSingleton<IAuthService, AuthService>();
+                services.AddSingleton<IRedditService, RedditService>();
+
+                services.AddSingleton<SubRedditStatServiceFactory>(provider => (redditService, subredditName) =>
+                    new SubRedditStatService(redditService, subredditName)
+                );
+
+                // Register the SubRedditManager
+                services.AddSingleton<ISubRedditManager, SubRedditManager>();
+                services.AddSingleton<IConsoleIO, ConsoleIO>();
+                services.AddSingleton<rListener>();
             })
             .Build();
+
+        var rListener = host.Services.GetRequiredService<rListener>();
+        rListener.Run();
 
         host.Dispose();
         Environment.Exit(0);
