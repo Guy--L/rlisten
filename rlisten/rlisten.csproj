@@ -23,4 +23,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Wrappers\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Wrappers\" />
+  </ItemGroup>
 </Project>
